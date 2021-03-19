@@ -18,8 +18,8 @@
 //
 // NYILATKOZAT
 // ---------------------------------------------------------------------------------------------
-// Nev    : 
-// Neptun : 
+// Nev    : Bakó Pál Ignác
+// Neptun : I31TDE
 // ---------------------------------------------------------------------------------------------
 // ezennel kijelentem, hogy a feladatot magam keszitettem, es ha barmilyen segitseget igenybe vettem vagy
 // mas szellemi termeket felhasznaltam, akkor a forrast es az atvett reszt kommentekben egyertelmuen jeloltem.
@@ -32,11 +32,6 @@
 // negativ elojellel szamoljak el es ezzel parhuzamosan eljaras is indul velem szemben.
 //=============================================================================================
 #include "framework.h"
-
-
-
-
-
 
 // vertex shader in GLSL: It is a Raw string (C++11) since it contains new line characters
 const char* const vertexSource = R"(
@@ -76,9 +71,92 @@ vec3 ConvertToVec3(vec2 a) {
 	return vec3(a.x / divider, a.y / divider, 1 / divider);
 }
 
+
+bool TwoSegmentsIntersects(vec2 a_1, vec2 a_2, vec2 b_1, vec2 b_2) {//vizsgálja hogy két szakasz metszi-e egymást
+	
+	/*
+	* elv:
+	* Elsõnek megvizsgáljuk hogy az x tengelyen lévõ intervallumaiknak van-e közös része. Ha nincs akkor nem metszehtik egymást, ha van megyünk tovább
+	* Felírjuk a két vektorra illesztett egyenes egyenletét és ha azok kiegyenlítik egymást akkor van metszõ pont aminek megvannak a koordinátái
+	* Megnézzük, hogy a metszõ pont x koordinátája eleme e a két intervallum közös részének
+	* két intervallum közös része [két baloldal közül a nagyobbik; két jobboldal közül a kisebbik]
+	*/
+
+
+	//a bal és jobb oldali pontja
+	float min_a = a_1.x < a_2.x ? a_1.x : a_2.x;
+	float max_a = a_1.x > a_2.x ? a_1.x : a_2.x;
+	//b bal és jobb oldali pontja
+	float min_b = b_1.x < b_2.x ? b_1.x : b_2.x;
+	float max_b = b_1.x > b_2.x ? b_1.x : b_2.x;
+
+	
+	if (max_a < min_b) return false; //az intervallumok x tengely mentén nem metszik egymást, tehát nem metszhetik egymást a vektorok
+
+	//egyenes egyenlete: A1*x + b1 = y
+
+	//meredekségek
+	float A1 = 0;
+	float A2 = 0;
+
+	if (a_1.x - a_2.x != 0)
+		A1 = (a_1.y - a_2.y) / (a_1.x - a_2.x);
+
+	if (b_1.x - a_2.x != 0)
+		A2 = (b_1.y - b_2.y) / (b_1.x - b_2.x);
+	
+	//eltolás y tengelyen
+	float b1 = a_1.y - A1 * a_1.x;
+	float b2 = b_1.y - A2 * b_1.x;
+
+	//A pont ahol metszik egymást legyen P(X,Y)
+	//Akkor metszik egymást, ha A1*x + b1=A2*x + b2
+	float X = (b2 - b1) / (A1 - A2);
+
+	//
+	float greatest_min = min_a > min_b ? min_a : min_b;
+	float lowest_max = max_a < max_b ? max_a : max_b;
+
+	if (X<greatest_min || X>lowest_max)
+		return false;
+	else
+		return true;
+}
+
+int Intersects(vec2 arr[122]) {//visszaadja hogy hány metszõ él van
+	int sum = 0;
+	for (int i = 0; i < 120; i += 2) {
+		if (i > 1) {
+			for (int j = 0; j < 120; j += 2) {
+				if (j != i) {
+					if (TwoSegmentsIntersects(arr[i], arr[i + 1], arr[j], arr[j + 1]))
+						sum++;
+				}
+			}
+		}
+	}
+
+	return sum;
+}
+
+void SetNeighbours(vec2 old[122], vec2 next[122]) {
+	for (int i = 0; i < 122; i++) {
+		old[i] = next[i];
+	}
+}
+
+
+void SetVertices(vec2 old[50], vec2 next[50]) {
+	for (int i = 0; i < 50; i++) {
+		old[i] = next[i];
+	}
+}
+
 class Graph {
 
 public:
+	vec2 circle[100];
+
 	vec3 vertices3D[50];//50pont a hiperbolikos síkon
 	vec2 vertices[50];//50 pont a gráfban
 
@@ -139,6 +217,20 @@ public:
 		}
 	}
 
+	void Circle(int index) {//kirajzol egy kört az átvett indexü pont középponttal
+		for (int i = 0; i < 100; i++) {
+
+			float fi = i * 2 * M_PI / 100;
+
+			circle[i] = (vec2(cosf(fi) * 0.04f, sinf(fi) * 0.04f)+vec2(vertices3D[index].x, vertices3D[index].y));
+
+			float divider = sqrt(1 + circle[i].x * circle[i].x + circle[i].y * circle[i].y);
+
+			circle[i] = circle[i] / divider;
+		}
+	}
+
+	
 	void PrintVertices() {
 		for (int i = 0; i < 50; i++) {
 			printf("%d.: %f %f\n", (i+1), vertices[i].x, vertices[i].y);
@@ -161,10 +253,30 @@ public:
 		}
 	}
 
+
+	void GetBestOption() {//Getting the best option by intersecting segments
+		InitVertices();
+		InitNeighbors();
+		int min_intersects = 10000;
+	
+		vec2 best_vertices[50];
+		vec2 best_neighbors[122];
+
+		for (int j = 0; j < 100; j++) {
+			if (min_intersects > Intersects(neighbors)) {
+				min_intersects = Intersects(neighbors);
+				SetNeighbours(best_neighbors, neighbors);
+			}
+			InitNeighbors();
+		}
+		
+		SetNeighbours(neighbors, best_neighbors);
+	}
+
 	Graph() {
 		InitVertices();
 		InitNeighbors();
-
+		
 /*		PrintVertices();
 		PrintNeighbors();
 		Printindexes();*/
@@ -173,9 +285,11 @@ public:
 
 unsigned int vao;	// virtual world on the GPU
 unsigned int vao1;
+unsigned int vao2;
 
 unsigned int vbo;
 unsigned int vbo1;
+unsigned int vbo2;
 Graph graph;
 
 // Initialization, create an OpenGL context
@@ -184,14 +298,18 @@ void onInitialization() {
 
 	glGenVertexArrays(1, &vao);	// get 1 vao id
 	glGenVertexArrays(1, &vao1);
+	glGenVertexArrays(1, &vao2);
+
+
+	glBindVertexArray(vao2);
+	glGenBuffers(1, &vbo2);
 
 	glBindVertexArray(vao1);
-	// vertex buffer object, for the vertices
-	glGenBuffers(1, &vbo1);	// Generate 1 buffer
+	glGenBuffers(1, &vbo1);	
 
-	glBindVertexArray(vao);		// make it active
-			// vertex buffer object, for the vertices
-	glGenBuffers(1, &vbo);	// Generate 1 buffer
+
+	glBindVertexArray(vao);		
+	glGenBuffers(1, &vbo);	
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	
@@ -223,12 +341,47 @@ void onInitialization() {
 		0, NULL); // stride, offset: tightly packed*/
 
 
+
+	glBindVertexArray(vao2);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+
+
+
+	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+		sizeof(graph.circle),  // # bytes
+		graph.circle,	      	// address
+		GL_STATIC_DRAW);	// we do not change later
+
+	glEnableVertexAttribArray(0);  // AttribArray 0
+	glVertexAttribPointer(0,      // vbo -> AttribArray 0
+		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+		0, NULL); // stride, offset: tightly packed*/
+
+
 	// create program for the GPU
 	gpuProgram.create(vertexSource, fragmentSource, "outColor");
 }
 
 
+void DrawCircles() {
+	glBindVertexArray(vao2);
 
+
+	for (int i = 0; i < 50; i++) {
+		graph.Circle(i);
+		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+			sizeof(graph.circle),  // # bytes
+			graph.circle,	      	// address
+			GL_STATIC_DRAW);	// we do not change later
+
+		glEnableVertexAttribArray(0);  // AttribArray 0
+		glVertexAttribPointer(0,      // vbo -> AttribArray 0
+			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+			0, NULL); // stride, offset: tightly packed*/
+		glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
+	}
+	
+}
 
 void DrawGraph() {
 
@@ -282,7 +435,7 @@ void onDisplay() {
 	glPointSize((GLfloat)4);
 
 	DrawGraph();
-
+	DrawCircles();
 	glutSwapBuffers(); // exchange buffers for double buffering
 }
 
@@ -317,6 +470,7 @@ void Moving(vec2 MousePos) {
 	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
 	vec3 m2 = (Origo * cosh(3*dist / 4)) + (v * sinh(3*dist / 4));//m2 az OriogoQ vektoron
 
+	
 	//az összes pontunkat tükrözzük az m1-re aztán az m2-re
 	for (int i = 0; i < 50; i++) {
 		vec3 t = graph.vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
@@ -326,7 +480,7 @@ void Moving(vec2 MousePos) {
 			return;
 
 		vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//irányvektor t pontban
-		vec3 t1 = (t * cosh(2 * dist1)) + (v1*sinh(dist1 * 2));//t tükrözve m1-re
+		vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t tükrözve m1-re
 
 		float dist2 = acosh(-lorentz(m2, t1));//t1 m2 távolság
 		if (dist2 == 0)//0-val nem osztunk
@@ -334,7 +488,7 @@ void Moving(vec2 MousePos) {
 
 		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
 		vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 tükrözve m2-re
-		
+
 		graph.vertices3D[i] = t2;
 		graph.vertices[i] = ConvertToVec2(graph.vertices3D[i]);
 	}
@@ -342,23 +496,24 @@ void Moving(vec2 MousePos) {
 	graph.InitNeighbors();
 }
 
-void HandleMoving(vec2 mousePos) {
-	Moving(mousePos);
-}
 
 
-vec2 Start;
+
+vec2 Start=(0, 0, 0);
 // Mouse click event
 void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel coordinates of the cursor in the coordinate system of the operation system
 	// Convert to normalized device space
 	float cX = 2.0f * pX / windowWidth - 1;	// flip y axis
 	float cY = 1.0f - 2.0f * pY / windowHeight;
-
+	
 	char* buttonStat;
 	switch (state) {
 	case GLUT_DOWN:
-		Start.x = cX;
-		Start.y = cY;
+		if (cX * cX + cY * cY < 1) {
+			Start.x = cX;
+			Start.y = cY;
+		}
+		buttonStat = "pressed";
 		break;
 	case GLUT_UP:   buttonStat = "released"; break;
 	}
@@ -377,11 +532,10 @@ void onMouseMotion(int pX, int pY) {	// pX, pY are the pixel coordinates of the 
 	float cX = 2.0f * pX / windowWidth - 1;	// flip y axis
 	float cY = 1.0f - 2.0f * pY / windowHeight;
 
-	if ( ((cX - Start.x)*(cX - Start.x) + (cY - Start.y)*(cY - Start.y)) >= 1)
+	if (cX * cX + cY * cY >= 1)
 		return;
 
-
-	Moving(vec2(cX - Start.x, cY - Start.y));//lécci ne forgasssssd sokáig mert tarkónbaszlak
+	Moving(vec2(cX - Start.x, cY - Start.y));
 	Start.x = cX;
 	Start.y = cY;
 
@@ -392,4 +546,5 @@ void onMouseMotion(int pX, int pY) {	// pX, pY are the pixel coordinates of the 
 // Idle event indicating that some time elapsed: do animation here
 void onIdle() {
 	long time = glutGet(GLUT_ELAPSED_TIME); // elapsed time since the start of the program
+	
 }
