@@ -1,1 +1,30 @@
-﻿  Skeleton.vcxproj -> C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\bin\Skeleton.exe
+﻿  Skeleton.cpp
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\framework.h(167,17): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(92,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(230,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(265,13): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(269,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(448,13): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(455,24): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(455,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(458,25): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(458,48): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(459,25): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(459,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(466,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(470,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(470,44): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(471,22): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(471,47): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(473,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(477,29): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(477,45): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(478,23): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(478,48): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\Skeleton\Skeleton.cpp(490,17): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Generating code
+  3 of 126 functions ( 2.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Skeleton.vcxproj -> C:\Users\Puluka\Desktop\Egyetem\4.félév\Grafika\1.Hf\grafika\Programs\Skeleton\bin\Skeleton.exe

@@ -55,17 +55,20 @@ const char* const fragmentSource = R"(
 	#version 330			// Shader 3.3
 	precision highp float;	// normal floats, makes no difference on desktop computers
 
-	uniform sampler2D textureUnit;
+	//uniform sampler2D textureUnit;
+	//unifrom int isTexture 
 
-	uniform vec3 color;		// uniform variable, the color of the primitive
+	uniform vec3 color;	
+	in vec2 texCoord;	
+	
 	out vec4 outColor;		// computed color of the current pixel
 
-	in vec2 texCoord;			// variable input: interpolated texture coordinates
-	out vec4 fragmentColor;
-
 	void main() {
-		outColor = vec4(color, 1);	// computed color is the color of the primitive
-		fragmentColor = texture(textureUnit, texCoord);
+		/*if(isTexture==1){
+			fragmentColor = texture(textureUnit, texCoord);
+		}else{*/
+			outColor = vec4(color, 1);	// computed color is the color of the primitive
+		//}		
 	}
 )";
 
@@ -73,7 +76,13 @@ const char* const fragmentSource = R"(
 
 
 GPUProgram gpuProgram; // vertex and fragment shaders
+unsigned int vao;	// virtual world on the GPU
+unsigned int vao1;
+unsigned int vao2;//circle
 
+unsigned int vbo;
+unsigned int vbo1;
+unsigned int vbo2[2];
 
 vec2 ConvertToVec2(vec3 a) {
 	return vec2(a.x / a.z, a.y / a.z);
@@ -170,6 +179,7 @@ class Graph {
 public:
 	vec2 circle[100];
 	vec2 UV[4];
+	vec2 vert[4];
 
 	vec3 vertices3D[50];//50pont a hiperbolikos síkon
 	vec2 vertices[50];//50 pont a gráfban
@@ -249,6 +259,7 @@ public:
 	}
 
 	void Circle(int index) {//kirajzol egy kört az átvett indexü pont középponttal
+
 		for (int i = 0; i < 100; i++) {
 
 			float fi = i * 2 * M_PI / 100;
@@ -260,9 +271,43 @@ public:
 			circle[i] = circle[i] / divider;
 		}
 
+		vert[0] = circle[0];
+		vert[1] = circle[24];
+		vert[2] = circle[49];
+		vert[3] = circle[99];
+
+		InitCircle();
+
 	}
 
+	void InitCircle() {
 	
+		glBindVertexArray(vao2);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
+
+		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+			sizeof(circle),  // # bytes
+			circle,	      	// address
+			GL_STATIC_DRAW);	// we do not change later
+
+		glEnableVertexAttribArray(0);  // AttribArray 0
+		glVertexAttribPointer(0,      // vbo -> AttribArray 0
+			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+			0, NULL); // stride, offset: tightly packed*/
+
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo2[1]);
+		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+			sizeof(circle),  // # bytes
+			circle,	      	// address
+			GL_STATIC_DRAW);	// we do not change later
+
+		glEnableVertexAttribArray(1);  // AttribArray 1
+		glVertexAttribPointer(1,      // vbo -> AttribArray 1
+			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+			0, NULL); // stride, offset: tightly packed*/
+	}
+
 	void PrintVertices() {
 		for (int i = 0; i < 50; i++) {
 			printf("%d.: %f %f\n", (i+1), vertices[i].x, vertices[i].y);
@@ -272,7 +317,7 @@ public:
 	void PrintNeighbors() {
 		int j = 1;
 		for (int i = 0; i < 119; i += 2) {
-			//printf("%d.: %f %f --> %f %f\n", j, neighbors[i].x, neighbors[i].y, neighbors[i + 1].x, neighbors[i + 1].y);
+			printf("%d.: %f %f --> %f %f\n", j, neighbors[i].x, neighbors[i].y, neighbors[i + 1].x, neighbors[i + 1].y);
 			j++;
 		}
 	}
@@ -290,23 +335,16 @@ public:
 		InitVertices();
 		InitNeighbors();
 		
-/*		PrintVertices();
-		PrintNeighbors();
-		Printindexes();*/
 	}
 };
 
-unsigned int vao;	// virtual world on the GPU
-unsigned int vao1;
-unsigned int vao2;//circle
 
-unsigned int vbo;
-unsigned int vbo1;
-unsigned int vbo2[2];
-Graph graph;
+Graph* graph;
 
 // Initialization, create an OpenGL context
 void onInitialization() {
+	glViewport(0, 0, windowWidth, windowHeight);
+
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	glGenVertexArrays(1, &vao);	// get 1 vao id
@@ -318,106 +356,41 @@ void onInitialization() {
 	glGenBuffers(2, vbo2);
 
 	glBindVertexArray(vao1);
-	glGenBuffers(1, &vbo1);	
+	glGenBuffers(1, &vbo1);
 
 
-	glBindVertexArray(vao);		
-	glGenBuffers(1, &vbo);	
+	glBindVertexArray(vao);
+	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	
-	//saving vertices
-	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-		sizeof(graph.vertices),  // # bytes
-		graph.vertices,	      	// address
-		GL_STATIC_DRAW);	// we do not change later
-
-	glEnableVertexAttribArray(0);  // AttribArray 0
-	glVertexAttribPointer(0,       // vbo -> AttribArray 0
-		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-		0, NULL); // stride, offset: tightly packed
-
-	//saving Neighbors
-	glBindVertexArray(vao1);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo1);
-
-
-
-	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-		sizeof(graph.neighbors),  // # bytes
-		graph.neighbors,	      	// address
-		GL_STATIC_DRAW);	// we do not change later
-
 	glEnableVertexAttribArray(0);  // AttribArray 0
 	glVertexAttribPointer(0,      // vbo -> AttribArray 0
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); // stride, offset: tightly packed*/
 
-
-
-	glBindVertexArray(vao2);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
-
-	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-		sizeof(graph.circle),  // # bytes
-		graph.circle,	      	// address
-		GL_STATIC_DRAW);	// we do not change later
-
-	glEnableVertexAttribArray(0);  // AttribArray 0
-	glVertexAttribPointer(0,      // vbo -> AttribArray 0
-		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-		0, NULL); // stride, offset: tightly packed*/
-
-	
 
 	// create program for the GPU
 	gpuProgram.create(vertexSource, fragmentSource, "outColor");
+	graph = new Graph();
 }
 
 
 void DrawCircles() {
 	glBindVertexArray(vao2);
-
+	glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
 
 	for (int i = 0; i < 50; i++) {
-		graph.Circle(i);
-		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-			sizeof(graph.circle),  // # bytes
-			graph.circle,	      	// address
-			GL_STATIC_DRAW);	// we do not change later
-
-		glEnableVertexAttribArray(0);  // AttribArray 0
-		glVertexAttribPointer(0,      // vbo -> AttribArray 0
-			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-			0, NULL); // stride, offset: tightly packed*/
-
-		
-
+		graph->Circle(i);
 		glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 	}
-	
 }
 
 void DrawGraph() {
-
-	glBindVertexArray(vao);
-	//saving vertices
-	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-		sizeof(graph.vertices),  // # bytes
-		graph.vertices,	      	// address
-		GL_STATIC_DRAW);	// we do not change later
-
-	glEnableVertexAttribArray(0);  // AttribArray 0
-	glVertexAttribPointer(0,       // vbo -> AttribArray 0
-		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-		0, NULL); // stride, offset: tightly packed
-	glDrawArrays(GL_POINTS, 0 /*startIdx*/, 50 /*# Elements*/);
-
 	//saving Neighbors
 	glBindVertexArray(vao1);
 	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-		sizeof(graph.neighbors),  // # bytes
-		graph.neighbors,	      	// address
+		sizeof(graph->neighbors),  // # bytes
+		graph->neighbors,	      	// address
 		GL_STATIC_DRAW);	// we do not change later
 
 	glEnableVertexAttribArray(0);  // AttribArray 0
@@ -426,7 +399,6 @@ void DrawGraph() {
 		0, NULL); // stride, offset: tightly packed*/
 	glDrawArrays(GL_LINES, 0 /*startIdx*/, 122 /*# Elements*/);
 }
-
 
 
 // Window has become invalid: Redraw
@@ -488,7 +460,7 @@ void Moving(vec2 MousePos) {
 	
 	//az összes pontunkat tükrözzük az m1-re aztán az m2-re
 	for (int i = 0; i < 50; i++) {
-		vec3 t = graph.vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
+		vec3 t = graph->vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
 
 		float dist1 = acosh(-lorentz(m1, t));//m1 t távolság
 		if (dist1 == 0)//0-val nem osztunk
@@ -504,11 +476,11 @@ void Moving(vec2 MousePos) {
 		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
 		vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 tükrözve m2-re
 
-		graph.vertices3D[i] = t2;
-		graph.vertices[i] = ConvertToVec2(graph.vertices3D[i]);
+		graph->vertices3D[i] = t2;
+		graph->vertices[i] = ConvertToVec2(graph->vertices3D[i]);
 	}
 
-	graph.InitNeighbors();
+	graph->InitNeighbors();
 }
 
 
