@@ -40,8 +40,12 @@ const char* const vertexSource = R"(
 
 	uniform mat4 MVP;			// uniform variable, the Model-View-Projection transformation matrix
 	layout(location = 0) in vec2 vp;	// Varying input: vp = vertex position is expected in attrib array 0
+	layout(location = 1) in vec2 vertexUV;
+
+	out vec2 textCoord;
 
 	void main() {
+		textCoord=vertexUV;
 		gl_Position = vec4(vp.x, vp.y, 0, 1) * MVP;		// transform vp from modeling space to normalized device space
 	}
 )";
@@ -50,14 +54,23 @@ const char* const vertexSource = R"(
 const char* const fragmentSource = R"(
 	#version 330			// Shader 3.3
 	precision highp float;	// normal floats, makes no difference on desktop computers
-	
+
+	uniform sampler2D textureUnit;
+
 	uniform vec3 color;		// uniform variable, the color of the primitive
 	out vec4 outColor;		// computed color of the current pixel
 
+	in vec2 texCoord;			// variable input: interpolated texture coordinates
+	out vec4 fragmentColor;
+
 	void main() {
 		outColor = vec4(color, 1);	// computed color is the color of the primitive
+		fragmentColor = texture(textureUnit, texCoord);
 	}
 )";
+
+
+
 
 GPUProgram gpuProgram; // vertex and fragment shaders
 
@@ -156,6 +169,7 @@ class Graph {
 
 public:
 	vec2 circle[100];
+	vec2 UV[4];
 
 	vec3 vertices3D[50];//50pont a hiperbolikos síkon
 	vec2 vertices[50];//50 pont a gráfban
@@ -228,6 +242,22 @@ public:
 
 			circle[i] = circle[i] / divider;
 		}
+
+		UV[0] = circle[24];
+		UV[1] = circle[49];
+		UV[2] = circle[74];
+		UV[3] = circle[99];
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo2[1]);
+		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+			sizeof(graph.UV),  // # bytes
+			graph.UV,	      	// address
+			GL_STATIC_DRAW);	// we do not change later
+
+		glEnableVertexAttribArray(1);  // AttribArray 0
+		glVertexAttribPointer(0,      // vbo -> AttribArray 0
+			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+			0, NULL); // stride, offset: tightly packed*/
 	}
 
 	
@@ -285,11 +315,11 @@ public:
 
 unsigned int vao;	// virtual world on the GPU
 unsigned int vao1;
-unsigned int vao2;
+unsigned int vao2;//circle
 
 unsigned int vbo;
 unsigned int vbo1;
-unsigned int vbo2;
+unsigned int vbo2[2];
 Graph graph;
 
 // Initialization, create an OpenGL context
@@ -302,7 +332,7 @@ void onInitialization() {
 
 
 	glBindVertexArray(vao2);
-	glGenBuffers(1, &vbo2);
+	glGenBuffers(2, vbo2);
 
 	glBindVertexArray(vao1);
 	glGenBuffers(1, &vbo1);	
@@ -343,9 +373,7 @@ void onInitialization() {
 
 
 	glBindVertexArray(vao2);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo2);
-
-
+	glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
 
 	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
 		sizeof(graph.circle),  // # bytes
@@ -357,6 +385,7 @@ void onInitialization() {
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); // stride, offset: tightly packed*/
 
+	
 
 	// create program for the GPU
 	gpuProgram.create(vertexSource, fragmentSource, "outColor");
@@ -378,6 +407,9 @@ void DrawCircles() {
 		glVertexAttribPointer(0,      // vbo -> AttribArray 0
 			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 			0, NULL); // stride, offset: tightly packed*/
+
+		gpuProgram.setUniform(texture, "textureUnit");
+
 		glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 	}
 	
