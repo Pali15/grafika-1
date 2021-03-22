@@ -178,7 +178,6 @@ class Graph{
 
 public:
 	vec2 circle[100];
-	vec2 UV[4];
 	vec2 vert[8];
 	Texture* texture[50];
 
@@ -284,12 +283,13 @@ public:
 
 	}
 
-	void InitTextures() {
+	void InitTextures() {//feltöli a textúra tömböt
 		for (int i = 0; i < 50; i++) {
 			int width = 8, height = 8;				// create checkerboard texture procedurally
 			std::vector<vec4> image(width * height);
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
+					//random szín generálása
 					float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 					float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 					float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -298,7 +298,6 @@ public:
 			}
 
 			texture[i] = new Texture(width, height, image);
-			printf("%d\n", texture[i]->textureId);
 		}
 	}
 
@@ -307,8 +306,8 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
 
 		for (int i = 0; i < 50; i++) {
-
-			gpuProgram.setUniform(0, "isTexture");
+			//elsõnek kirajzoljuk a kört
+			gpuProgram.setUniform(0, "isTexture");//color színû legyen a pixel
 			Circle(i);
 			glBufferData(GL_ARRAY_BUFFER,
 				sizeof(circle),
@@ -322,23 +321,24 @@ public:
 			
 			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 
-			gpuProgram.setUniform((*texture[i]), "textureUnit");
-			gpuProgram.setUniform(1, "isTexture");
-			glBufferData(GL_ARRAY_BUFFER,
+			gpuProgram.setUniform((*texture[i]), "textureUnit");//betöltjük az aktuális textureUnit-ot
+			gpuProgram.setUniform(1, "isTexture");//mostmár a textúrához igazítja a pixel színét
+			glBufferData(GL_ARRAY_BUFFER,//betöltjüka vert-et a bufferbe
 				sizeof(vert),
 				vert,
 				GL_STATIC_DRAW);
-
+			//betöltjük a vertet
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0,
 				2, GL_FLOAT, GL_FALSE,
 				0, NULL);
-
+			//betöltjuk a csúcspontokat
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1,
 				2, GL_FLOAT, GL_FALSE,
-				0, (void*)(4*sizeof(vec2)));
-			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 4 /*# Elements*/);
+				0, (void*)(4*sizeof(vec2)));//4*vec2 offset-->az utolsó 4 elemet töltse be
+
+			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 4 /*# Elements*/);//kirajzoljuk
 		}
 	}
 
