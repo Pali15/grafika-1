@@ -136,13 +136,13 @@ bool TwoSegmentsIntersects(vec2 a_1, vec2 a_2, vec2 b_1, vec2 b_2) {//vizsgálja 
 		return true;
 }
 
-int Intersects(vec2 arr[122]) {//visszaadja hogy hány metszõ él van
+int Intersects(int arr[122], vec2 vert[50]) {//visszaadja hogy hány metszõ él van
 	int sum = 0;
 	for (int i = 0; i < 120; i += 2) {
 		if (i > 1) {
 			for (int j = 0; j < 120; j += 2) {
 				if (j != i) {
-					if (TwoSegmentsIntersects(arr[i], arr[i + 1], arr[j], arr[j + 1]))
+					if (TwoSegmentsIntersects(vert[arr[i]], vert[arr[i+1]], vert[arr[j]], vert[arr[j+1]]))
 						sum++;
 				}
 			}
@@ -189,10 +189,7 @@ public:
 		return false;
 	}
 
-	//feltölti az indexes és a vertices tömböket
-	void InitVertices() {
-
-		//indexes
+	void InitIndexes() {//61 csúcs pár legenerálása
 		for (int i = 0; i < 122; i += 2) {
 
 
@@ -207,20 +204,40 @@ public:
 			indexes[i] = r;
 			indexes[i + 1] = r2;
 		}
+	}
+
+	void InitVertices() {//csúcsok legenrálása
+
+		int min_intersects = 10000;
+		vec2 optimalVertices[50];
 
 		//vertices
-		for (int i = 0; i < 50; i++) {//creating random 50 points for vertices
+		for (int i = 0; i < 5000; i++) {//100 grafot generálunk
 
 
 			float x = ((float(rand()) / float(RAND_MAX)) * (2)) - 1;
 			float y = ((float(rand()) / float(RAND_MAX)) * (2)) - 1;
 			float z = sqrt(1 + x * x + y * y);
 
-			vertices3D[i].x = x;
-			vertices3D[i].y = y;
-			vertices3D[i].z = z;
+			vertices3D[i-(50*(i/50))].x = x;
+			vertices3D[i - (50 * (i / 50))].y = y;
+			vertices3D[i - (50 * (i / 50))].z = z;
 
-			vertices[i] = ConvertToVec2(vertices3D[i]);		
+			vertices[i - (50 * (i / 50))] = ConvertToVec2(vertices3D[i - (50 * (i / 50))]);
+
+			//10 esetbõl kiválasztjuk azt amelyikben a legkevesebb metszõ él van
+			if ((i - (50 * (i / 50))) == 49) {
+				if (Intersects(indexes, vertices) < min_intersects) {
+					min_intersects = Intersects(indexes, vertices);
+					SetVertices(optimalVertices, vertices);
+				}
+			}
+		}
+
+		SetVertices(vertices, optimalVertices);
+
+		for (int i = 0; i < 50; i++) {
+			vertices3D[i] = ConvertToVec3(vertices[i]);
 		}
 	}
 
@@ -243,21 +260,6 @@ public:
 			circle[i] = circle[i] / divider;
 		}
 
-		UV[0] = circle[24];
-		UV[1] = circle[49];
-		UV[2] = circle[74];
-		UV[3] = circle[99];
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo2[1]);
-		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-			sizeof(graph.UV),  // # bytes
-			graph.UV,	      	// address
-			GL_STATIC_DRAW);	// we do not change later
-
-		glEnableVertexAttribArray(1);  // AttribArray 0
-		glVertexAttribPointer(0,      // vbo -> AttribArray 0
-			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-			0, NULL); // stride, offset: tightly packed*/
 	}
 
 	
@@ -283,27 +285,8 @@ public:
 		}
 	}
 
-
-	void GetBestOption() {//Getting the best option by intersecting segments
-		InitVertices();
-		InitNeighbors();
-		int min_intersects = 10000;
-	
-		vec2 best_vertices[50];
-		vec2 best_neighbors[122];
-
-		for (int j = 0; j < 100; j++) {
-			if (min_intersects > Intersects(neighbors)) {
-				min_intersects = Intersects(neighbors);
-				SetNeighbours(best_neighbors, neighbors);
-			}
-			InitNeighbors();
-		}
-		
-		SetNeighbours(neighbors, best_neighbors);
-	}
-
 	Graph() {
+		InitIndexes();
 		InitVertices();
 		InitNeighbors();
 		
@@ -408,7 +391,7 @@ void DrawCircles() {
 			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 			0, NULL); // stride, offset: tightly packed*/
 
-		gpuProgram.setUniform(texture, "textureUnit");
+		
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 	}
