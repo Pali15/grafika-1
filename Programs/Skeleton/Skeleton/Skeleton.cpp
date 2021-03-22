@@ -52,23 +52,23 @@ const char* const vertexSource = R"(
 
 // fragment shader in GLSL
 const char* const fragmentSource = R"(
-	#version 330			// Shader 3.3
-	precision highp float;	// normal floats, makes no difference on desktop computers
+	#version 330
+    precision highp float;
 
-	//uniform sampler2D textureUnit;
-	//unifrom int isTexture 
+	uniform sampler2D textureUnit;
+	uniform int isTexture; 
 
 	uniform vec3 color;	
-	in vec2 texCoord;	
-	
-	out vec4 outColor;		// computed color of the current pixel
+
+	in vec2 texCoord;			// variable input: interpolated texture coordinates
+	out vec4 outColor;		// output that goes to the raster memory as told by glBindFragDataLocation
 
 	void main() {
-		/*if(isTexture==1){
-			fragmentColor = texture(textureUnit, texCoord);
-		}else{*/
+		if(isTexture==1){
+			outColor = texture(textureUnit, texCoord);
+		}else{
 			outColor = vec4(color, 1);	// computed color is the color of the primitive
-		//}		
+		}		
 	}
 )";
 
@@ -82,7 +82,7 @@ unsigned int vao2;//circle
 
 unsigned int vbo;
 unsigned int vbo1;
-unsigned int vbo2[2];
+unsigned int vbo2[3];
 
 vec2 ConvertToVec2(vec3 a) {
 	return vec2(a.x / a.z, a.y / a.z);
@@ -174,12 +174,13 @@ void SetVertices(vec2 old[50], vec2 next[50]) {
 	}
 }
 
-class Graph {
+class Graph{
 
 public:
 	vec2 circle[100];
 	vec2 UV[4];
-	vec2 vert[4];
+	vec2 vert[8];
+	Texture* texture[50];
 
 	vec3 vertices3D[50];//50pont a hiperbolikos síkon
 	vec2 vertices[50];//50 pont a gráfban
@@ -274,38 +275,89 @@ public:
 		vert[0] = circle[0];
 		vert[1] = circle[24];
 		vert[2] = circle[49];
-		vert[3] = circle[99];
+		vert[3] = circle[74];
 
-		InitCircle();
+		vert[4] = vec2(0, 0);
+		vert[5] = vec2(1, 0);
+		vert[6] = vec2(1, 1);
+		vert[7] = vec2(0, 1);
 
 	}
 
-	void InitCircle() {
-	
+	void InitTextures() {
+		for (int i = 0; i < 50; i++) {
+			int width = 8, height = 8;				// create checkerboard texture procedurally
+			std::vector<vec4> image(width * height);
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					image[y * width + x] = vec4(r, g, b, 1);
+				}
+			}
+
+			texture[i] = new Texture(width, height, image);
+			printf("%d\n", texture[i]->textureId);
+		}
+	}
+
+	void DrawCircles() {
 		glBindVertexArray(vao2);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
 
+		for (int i = 0; i < 50; i++) {
+
+			gpuProgram.setUniform(0, "isTexture");
+			Circle(i);
+			glBufferData(GL_ARRAY_BUFFER,
+				sizeof(circle),
+				circle,
+				GL_STATIC_DRAW);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0,
+				2, GL_FLOAT, GL_FALSE,
+				0, NULL);
+			
+			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
+
+			gpuProgram.setUniform((*texture[i]), "textureUnit");
+			gpuProgram.setUniform(1, "isTexture");
+			glBufferData(GL_ARRAY_BUFFER,
+				sizeof(vert),
+				vert,
+				GL_STATIC_DRAW);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0,
+				2, GL_FLOAT, GL_FALSE,
+				0, NULL);
+
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1,
+				2, GL_FLOAT, GL_FALSE,
+				0, (void*)(4*sizeof(vec2)));
+			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 4 /*# Elements*/);
+		}
+	}
+
+	void DrawGraph(){
+
+		//saving Neighbors
+		glBindVertexArray(vao1);
 		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-			sizeof(circle),  // # bytes
-			circle,	      	// address
+			sizeof(neighbors),  // # bytes
+			neighbors,	      	// address
 			GL_STATIC_DRAW);	// we do not change later
 
 		glEnableVertexAttribArray(0);  // AttribArray 0
 		glVertexAttribPointer(0,      // vbo -> AttribArray 0
 			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 			0, NULL); // stride, offset: tightly packed*/
-
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo2[1]);
-		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-			sizeof(circle),  // # bytes
-			circle,	      	// address
-			GL_STATIC_DRAW);	// we do not change later
-
-		glEnableVertexAttribArray(1);  // AttribArray 1
-		glVertexAttribPointer(1,      // vbo -> AttribArray 1
-			2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-			0, NULL); // stride, offset: tightly packed*/
+		int location = glGetUniformLocation(gpuProgram.getId(), "isTexture");
+		glUniform1i(location, 0);
+		glDrawArrays(GL_LINES, 0 /*startIdx*/, 122 /*# Elements*/);
 	}
 
 	void PrintVertices() {
@@ -334,7 +386,7 @@ public:
 		InitIndexes();
 		InitVertices();
 		InitNeighbors();
-		
+		InitTextures();
 	}
 };
 
@@ -353,7 +405,7 @@ void onInitialization() {
 
 
 	glBindVertexArray(vao2);
-	glGenBuffers(2, vbo2);
+	glGenBuffers(3, vbo2);
 
 	glBindVertexArray(vao1);
 	glGenBuffers(1, &vbo1);
@@ -368,38 +420,10 @@ void onInitialization() {
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); // stride, offset: tightly packed*/
 
-
 	// create program for the GPU
 	gpuProgram.create(vertexSource, fragmentSource, "outColor");
 	graph = new Graph();
 }
-
-
-void DrawCircles() {
-	glBindVertexArray(vao2);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
-
-	for (int i = 0; i < 50; i++) {
-		graph->Circle(i);
-		glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
-	}
-}
-
-void DrawGraph() {
-	//saving Neighbors
-	glBindVertexArray(vao1);
-	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-		sizeof(graph->neighbors),  // # bytes
-		graph->neighbors,	      	// address
-		GL_STATIC_DRAW);	// we do not change later
-
-	glEnableVertexAttribArray(0);  // AttribArray 0
-	glVertexAttribPointer(0,      // vbo -> AttribArray 0
-		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-		0, NULL); // stride, offset: tightly packed*/
-	glDrawArrays(GL_LINES, 0 /*startIdx*/, 122 /*# Elements*/);
-}
-
 
 // Window has become invalid: Redraw
 void onDisplay() {
@@ -421,8 +445,8 @@ void onDisplay() {
 
 	glPointSize((GLfloat)4);
 
-	DrawGraph();
-	DrawCircles();
+	graph->DrawGraph();
+	graph->DrawCircles();
 	glutSwapBuffers(); // exchange buffers for double buffering
 }
 
