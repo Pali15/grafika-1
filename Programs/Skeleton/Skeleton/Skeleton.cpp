@@ -37,16 +37,16 @@
 const char* const vertexSource = R"(
 	#version 330				// Shader 3.3
 	precision highp float;		// normal floats, makes no difference on desktop computers
+uniform mat4 MVP;			// Model-View-Projection matrix in row-major format
 
-	uniform mat4 MVP;			// uniform variable, the Model-View-Projection transformation matrix
-	layout(location = 0) in vec2 vp;	// Varying input: vp = vertex position is expected in attrib array 0
-	layout(location = 1) in vec2 vertexUV;
+	layout(location = 0) in vec2 vertexPosition;	// Attrib Array 0
+	layout(location = 1) in vec2 vertexUV;			// Attrib Array 1
 
-	out vec2 textCoord;
+	out vec2 texCoord;								// output attribute
 
 	void main() {
-		textCoord=vertexUV;
-		gl_Position = vec4(vp.x, vp.y, 0, 1) * MVP;		// transform vp from modeling space to normalized device space
+		texCoord = vertexUV;														// copy texture coordinates
+		gl_Position = vec4(vertexPosition.x, vertexPosition.y, 0, 1) * MVP; 		// transform to clipping space
 	}
 )";
 
@@ -56,7 +56,7 @@ const char* const fragmentSource = R"(
     precision highp float;
 
 	uniform sampler2D textureUnit;
-	uniform int isTexture; 
+	uniform int isTexture;
 
 	uniform vec3 color;	
 
@@ -167,6 +167,15 @@ void SetNeighbours(vec2 old[122], vec2 next[122]) {
 	}
 }
 
+//true-val tér vissza ha egy szomszédság már létezik
+bool neighborAlreadyExists(int arr[122], int a, int b, int elements) {
+	for (int i = 0; i < (elements - 2); i += 2) {
+		if ((a == arr[i] && b == arr[i + 1]) || (b == arr[i] && a == arr[i + 1])) {
+			return true;
+		}
+	}
+	return false;
+}
 
 void SetVertices(vec2 old[50], vec2 next[50]) {
 	for (int i = 0; i < 50; i++) {
@@ -189,15 +198,6 @@ public:
 
 public:
 
-	//true-val tér vissza ha egy szomszédság már létezik
-	bool neighborAlreadyExists(int arr[122], int a, int b, int elements) {
-		for (int i = 0; i < (elements - 2); i += 2) {
-			if ((a == arr[i] && b == arr[i + 1]) || (b == arr[i] && a == arr[i + 1])) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	void InitIndexes() {//61 csúcs pár legenerálása
 		for (int i = 0; i < 122; i += 2) {
@@ -507,7 +507,24 @@ void Moving(vec2 MousePos) {
 	graph->InitNeighbors();
 }
 
+float distance(vec2 a, vec2 b) {
+	return length(vec2(a.x - b.x, a.y - b.y));
+}
 
+void Sorting() {
+	for (int i = 0; i < 50; i++) {
+		for (int j = 0; j < 50; j++) {
+			if (i != j) {
+				if (neighborAlreadyExists(graph->indexes, i, j, 122)) {
+					
+				}
+				else {
+
+				}
+			}
+		}
+	}
+}
 
 
 vec2 Start=(0, 0, 0);
