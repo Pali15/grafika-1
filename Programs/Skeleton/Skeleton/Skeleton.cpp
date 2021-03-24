@@ -89,7 +89,13 @@ vec2 ConvertToVec2(vec3 a) {
 }
 
 vec3 ConvertToVec3(vec2 a) {
-	float divider = sqrt(1 - a.x * a.x - a.y * a.y);
+	float divider;
+	if ((a.x * a.x + a.y * a.y) >= 1) {
+		divider = sqrtf(0.01);
+	}
+	else {
+		divider = sqrtf(1 - a.x * a.x - a.y * a.y);
+	}
 	return vec3(a.x / divider, a.y / divider, 1 / divider);
 }
 
@@ -450,10 +456,7 @@ void onDisplay() {
 	glutSwapBuffers(); // exchange buffers for double buffering
 }
 
-// Key of ASCII code pressed
-void onKeyboard(unsigned char key, int pX, int pY) {
-	if (key == 'd') glutPostRedisplay();         // if d, invalidate display, i.e. redraw
-}
+
 
 // Key of ASCII code released
 void onKeyboardUp(unsigned char key, int pX, int pY) {
@@ -507,26 +510,103 @@ void Moving(vec2 MousePos) {
 	graph->InitNeighbors();
 }
 
-float distance(vec2 a, vec2 b) {
-	return length(vec2(a.x - b.x, a.y - b.y));
+void ShiftOneNode(int i, vec2 MousePos) {
+	vec3 Origo(0, 0, 1);
+	vec3 Q = ConvertToVec3(MousePos);//A vektor amivel tolunk
+	float dist = acosh(-lorentz(Origo, Q));//Origo és a Q távolsága a hiperbolikus síkon
+
+	vec3 v;//irányvektor
+
+	if (dist == 0)//nem osztunk 0-val
+		return;
+
+	v = (Q - (Origo * cosh(dist))) / sinh(dist);//irányvektor a hiperbolikus síkon
+
+	//2 pont amire tükrözünk úgy hogy dist(m1, m2)=dist(Origo, Q)/2<--ezért van dist/4 és 3*dist/4 mivel igy 2/4 lesz a távolságuk
+	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
+	vec3 m2 = (Origo * cosh(3 * dist / 4)) + (v * sinh(3 * dist / 4));//m2 az OriogoQ vektoron
+
+	vec3 t = graph->vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
+
+	float dist1 = acosh(-lorentz(m1, t));//m1 t távolság
+	if (dist1 == 0)//0-val nem osztunk
+		return;
+
+	vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//irányvektor t pontban
+	vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t tükrözve m1-re
+
+	float dist2 = acosh(-lorentz(m2, t1));//t1 m2 távolság
+	if (dist2 == 0)//0-val nem osztunk
+		return;
+
+	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
+	vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 tükrözve m2-re
+
+	graph->vertices3D[i] = t2;
+	graph->vertices[i] = ConvertToVec2(graph->vertices3D[i]);
 }
 
-void Sorting() {
-	for (int i = 0; i < 50; i++) {
-		for (int j = 0; j < 50; j++) {
-			if (i != j) {
-				if (neighborAlreadyExists(graph->indexes, i, j, 122)) {
-					
-				}
-				else {
+vec2 Direction(vec2 a, vec2 b) {
+	return (a-b);
+}
 
-				}
+float Distance(vec3 a, vec3 b) {
+	float dist = acosh(-lorentz(a, b));
+
+	return dist;
+}
+
+vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {
+	vec2 temp = ((a - b) * (log(param)));
+	return temp;
+}
+
+vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {
+	vec2 temp = ((a - b) * ((-1/(param*param))));
+	return temp;
+}
+
+
+int iterations = 0;
+void Sorting() {
+	float idealDistance = 0.4f;
+
+	for (int i = 0; i <50; i++) {
+
+		vec2 force;
+
+		for (int j = 0; j < 50; j++) {
+			if (i == j)
+				continue;
+
+			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);
+
+			float param = dist / idealDistance;
+
+			if (neighborAlreadyExists(graph->indexes, i, j, 122)) {
+				force = force + ForceBetweenNeighbors(graph->vertices[j], graph->vertices[i], param, dist);
+			}
+			else {
+				force = force + ForceBetweenVerts(graph->vertices[j], graph->vertices[i], param, dist);
 			}
 		}
+
+		force = force + (-graph->vertices[i] * 0.7f);//globális erõtér
+		force = force * 0.004f;
+		printf("%f %f\n", force.x, force.y);
+
+		ShiftOneNode(i, force);
 	}
+	graph->InitNeighbors();
+	glutPostRedisplay();
 }
-
-
+bool sort = false;
+// Key of ASCII code pressed
+void onKeyboard(unsigned char key, int pX, int pY) {
+	if (key == VK_SPACE) sort=true;
+	glutPostRedisplay();
+	
+}
 vec2 Start=(0, 0, 0);
 // Mouse click event
 void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel coordinates of the cursor in the coordinate system of the operation system
@@ -548,7 +628,7 @@ void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel co
 
 	switch (button) {
 	case GLUT_LEFT_BUTTON:   printf("Left button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY);   break;
-	case GLUT_MIDDLE_BUTTON: printf("Middle button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY); break;
+	case GLUT_MIDDLE_BUTTON: break;
 	case GLUT_RIGHT_BUTTON:  printf("Right button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY);  break;
 	}
 	glutPostRedisplay();
@@ -573,6 +653,14 @@ void onMouseMotion(int pX, int pY) {	// pX, pY are the pixel coordinates of the 
 
 // Idle event indicating that some time elapsed: do animation here
 void onIdle() {
-	long time = glutGet(GLUT_ELAPSED_TIME); // elapsed time since the start of the program
-	
+	long curr_time = glutGet(GLUT_ELAPSED_TIME);
+
+	if (sort) {
+		iterations++;
+		Sorting();
+		if (iterations == 100) {
+			sort = false;
+			iterations = 0;
+		}
+	}
 }

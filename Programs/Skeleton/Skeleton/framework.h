@@ -43,7 +43,6 @@ struct vec2 {
 inline float dot(const vec2& v1, const vec2& v2) {
 	return (v1.x * v2.x + v1.y * v2.y);
 }
-
 inline float length(const vec2& v) { return sqrtf(dot(v, v)); }
 
 inline vec2 normalize(const vec2& v) { return v * (1 / length(v)); }
