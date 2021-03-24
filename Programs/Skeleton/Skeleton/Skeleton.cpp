@@ -549,7 +549,9 @@ vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {//ha nem szomsz
 
 
 int iterations = 0;
+
 void Sorting() {
+
 	float idealDistance = 0.4f;
 
 	for (int i = 0; i <50; i++) {
@@ -572,11 +574,12 @@ void Sorting() {
 			}
 		}
 
-		force = force + (-graph->vertices[i] * 0.7f);//globális erõtér
-		force = force * 0.004f;
+		force = force + (-graph->vertices[i] * 3.0f);//globális erõtér
+		force = force * 0.01f;
 
 		ShiftOneNode(i, force);//eltolja a pontot
 	}
+
 	graph->InitNeighbors();
 	glutPostRedisplay();
 }
@@ -635,7 +638,7 @@ void onIdle() {
 	if (sort) {
 		iterations++;
 		Sorting();
-		if (iterations == 100) {
+		if (iterations == 1500) {
 			sort = false;
 			iterations = 0;
 		}
