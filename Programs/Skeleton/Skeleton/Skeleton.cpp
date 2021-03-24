@@ -204,7 +204,6 @@ public:
 
 public:
 
-
 	void InitIndexes() {//61 csúcs pár legenerálása
 		for (int i = 0; i < 122; i += 2) {
 
@@ -212,7 +211,7 @@ public:
 			int r = rand() % 50;//random index1
 			int r2 = rand() % 50;//random index2
 
-			while (neighborAlreadyExists(indexes, r, r2, i)) {//if they are following each other somewhere int the array than that neighborhood is already existing
+			while (neighborAlreadyExists(indexes, r, r2, i)) {
 				r = rand() % 50;
 				r2 = rand() % 50;
 			}
@@ -241,7 +240,7 @@ public:
 
 			vertices[i - (50 * (i / 50))] = ConvertToVec2(vertices3D[i - (50 * (i / 50))]);
 
-			//10 esetbõl kiválasztjuk azt amelyikben a legkevesebb metszõ él van
+			//100 esetbõl kiválasztjuk azt amelyikben a legkevesebb metszõ él van
 			if ((i - (50 * (i / 50))) == 49) {
 				if (Intersects(indexes, vertices) < min_intersects) {
 					min_intersects = Intersects(indexes, vertices);
@@ -260,7 +259,6 @@ public:
 	void InitNeighbors() {
 		for (int i = 0; i < 122; i++) {//Init neighbors
 			neighbors[i] = vertices[indexes[i]];
-			//printf("%f %f -- %f %f\n", neighbors[i].x, vertices[indexes[i]].x, neighbors[i].y, vertices[indexes[i]].y);
 		}
 	}
 
@@ -324,7 +322,8 @@ public:
 			glVertexAttribPointer(0,
 				2, GL_FLOAT, GL_FALSE,
 				0, NULL);
-			
+			int location = glGetUniformLocation(gpuProgram.getId(), "color");
+			glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
 			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 
 			gpuProgram.setUniform((*texture[i]), "textureUnit");//betöltjük az aktuális textureUnit-ot
@@ -363,29 +362,11 @@ public:
 			0, NULL); // stride, offset: tightly packed*/
 		int location = glGetUniformLocation(gpuProgram.getId(), "isTexture");
 		glUniform1i(location, 0);
+
+		location = glGetUniformLocation(gpuProgram.getId(), "color");
+		glUniform3f(location, 1.0f, 1.0f, 0.0f); // 3 floats
+
 		glDrawArrays(GL_LINES, 0 /*startIdx*/, 122 /*# Elements*/);
-	}
-
-	void PrintVertices() {
-		for (int i = 0; i < 50; i++) {
-			printf("%d.: %f %f\n", (i+1), vertices[i].x, vertices[i].y);
-		}
-	}
-
-	void PrintNeighbors() {
-		int j = 1;
-		for (int i = 0; i < 119; i += 2) {
-			printf("%d.: %f %f --> %f %f\n", j, neighbors[i].x, neighbors[i].y, neighbors[i + 1].x, neighbors[i + 1].y);
-			j++;
-		}
-	}
-
-	void Printindexes() {
-		int j = 1;
-		for (int i = 0; i < 119; i += 2) {
-			printf("%d.: %d --> %d\n", j, indexes[i], indexes[i+1]);
-			j++;
-		}
 	}
 
 	Graph() {
@@ -556,13 +537,13 @@ float Distance(vec3 a, vec3 b) {
 	return dist;
 }
 
-vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {
-	vec2 temp = ((a - b) * (log(param)));
+vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {//ha szomszédok ez a kettõ pont között az erõ
+	vec2 temp = ((a - b) * (log(param)));// = log(d/d*)<-úgy jöttem, rá, hogy ez a fv hasonlít a legjobban a házi videóban lévõ függényre
 	return temp;
 }
 
-vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {
-	vec2 temp = ((a - b) * ((-1/(param*param))));
+vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {//ha nem szomszédok ez a két pont között az erõ
+	vec2 temp = ((a - b) * ((-1/(param*param))));// -1/(d / d*)^2 < -úgy jöttem, rá, hogy ez a fv hasonlít a legjobban a házi videóban lévõ függényre
 	return temp;
 }
 
@@ -573,13 +554,13 @@ void Sorting() {
 
 	for (int i = 0; i <50; i++) {
 
-		vec2 force;
+		vec2 force;//eredõ erõ egy pontra
 
 		for (int j = 0; j < 50; j++) {
 			if (i == j)
 				continue;
 
-			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);
+			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);//hiperbolikus síkon a 2 vektor távolsága
 
 			float param = dist / idealDistance;
 
@@ -593,9 +574,8 @@ void Sorting() {
 
 		force = force + (-graph->vertices[i] * 0.7f);//globális erõtér
 		force = force * 0.004f;
-		printf("%f %f\n", force.x, force.y);
 
-		ShiftOneNode(i, force);
+		ShiftOneNode(i, force);//eltolja a pontot
 	}
 	graph->InitNeighbors();
 	glutPostRedisplay();
@@ -603,7 +583,7 @@ void Sorting() {
 bool sort = false;
 // Key of ASCII code pressed
 void onKeyboard(unsigned char key, int pX, int pY) {
-	if (key == VK_SPACE) sort=true;
+	if (key == 32) sort=true;
 	glutPostRedisplay();
 	
 }
@@ -627,9 +607,7 @@ void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel co
 	}
 
 	switch (button) {
-	case GLUT_LEFT_BUTTON:   printf("Left button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY);   break;
-	case GLUT_MIDDLE_BUTTON: break;
-	case GLUT_RIGHT_BUTTON:  printf("Right button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY);  break;
+
 	}
 	glutPostRedisplay();
 }
@@ -647,7 +625,6 @@ void onMouseMotion(int pX, int pY) {	// pX, pY are the pixel coordinates of the 
 	Start.x = cX;
 	Start.y = cY;
 
-	printf("Mouse moved to (%3.2f, %3.2f)\n", cX, cY);
 	glutPostRedisplay();
 }
 
