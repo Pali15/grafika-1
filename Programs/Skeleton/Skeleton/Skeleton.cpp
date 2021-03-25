@@ -75,10 +75,10 @@ const char* const fragmentSource = R"(
 
 
 
-GPUProgram gpuProgram; // vertex and fragment shaders
-unsigned int vao;	// virtual world on the GPU
+GPUProgram gpuProgram; 
+unsigned int vao;
 unsigned int vao1;
-unsigned int vao2;//circle
+unsigned int vao2;
 
 unsigned int vbo;
 unsigned int vbo1;
@@ -173,7 +173,6 @@ void SetNeighbours(vec2 old[122], vec2 next[122]) {
 	}
 }
 
-//true-val tér vissza ha egy szomszédság már létezik
 bool neighborAlreadyExists(int arr[122], int a, int b, int elements) {
 	for (int i = 0; i < (elements - 2); i += 2) {
 		if ((a == arr[i] && b == arr[i + 1]) || (b == arr[i] && a == arr[i + 1])) {
@@ -196,20 +195,19 @@ public:
 	vec2 vert[8];
 	Texture* texture[50];
 
-	vec3 vertices3D[50];//50pont a hiperbolikos síkon
-	vec2 vertices[50];//50 pont a gráfban
+	vec3 vertices3D[50];
+	vec2 vertices[50];
 
-	int indexes[122];//122 random index a szomszédokból
-	vec2 neighbors[122];//61 él kell->122pont a 61 élhez
+	int indexes[122];
+	vec2 neighbors[122];
 
 public:
 
-	void InitIndexes() {//61 csúcs pár legenerálása
+	void InitIndexes() {
 		for (int i = 0; i < 122; i += 2) {
 
-
-			int r = rand() % 50;//random index1
-			int r2 = rand() % 50;//random index2
+			int r = rand() % 50;
+			int r2 = rand() % 50;
 
 			while (neighborAlreadyExists(indexes, r, r2, i)) {
 				r = rand() % 50;
@@ -221,7 +219,7 @@ public:
 		}
 	}
 
-	void InitVertices() {//csúcsok legenrálása
+	void InitVertices() {
 
 		for (int i = 0; i < 50; i++) {
 
@@ -241,8 +239,8 @@ public:
 
 		int min_intersects = 10000;
 		vec2 optimalVertices[50];
-		//vertices
-		for (int i = 0; i < 5000; i++) {//100 grafot generálunk
+		
+		for (int i = 0; i < 5000; i++) {
 
 
 			float x = ((float(rand()) / float(RAND_MAX)) * (2)) - 1;
@@ -255,7 +253,7 @@ public:
 
 			vertices[i - (50 * (i / 50))] = ConvertToVec2(vertices3D[i - (50 * (i / 50))]);
 
-			//100 esetbõl kiválasztjuk azt amelyikben a legkevesebb metszõ él van
+			
 			if ((i - (50 * (i / 50))) == 49) {
 				if (Intersects(indexes, vertices) < min_intersects) {
 					min_intersects = Intersects(indexes, vertices);
@@ -274,12 +272,12 @@ public:
 	}
 
 	void InitNeighbors() {
-		for (int i = 0; i < 122; i++) {//Init neighbors
+		for (int i = 0; i < 122; i++) {
 			neighbors[i] = vertices[indexes[i]];
 		}
 	}
 
-	void Circle(int index) {//kirajzol egy kört az átvett indexü pont középponttal
+	void Circle(int index) {
 
 		for (int i = 0; i < 100; i++) {
 
@@ -304,13 +302,12 @@ public:
 
 	}
 
-	void InitTextures() {//feltöli a textúra tömböt
+	void InitTextures() {
 		for (int i = 0; i < 50; i++) {
-			int width = 8, height = 8;				// create checkerboard texture procedurally
+			int width = 8, height = 8;				
 			std::vector<vec4> image(width * height);
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
-					//random szín generálása
 					float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 					float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 					float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -327,8 +324,8 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
 
 		for (int i = 0; i < 50; i++) {
-			//elsõnek kirajzoljuk a kört
-			gpuProgram.setUniform(0, "isTexture");//color színû legyen a pixel
+			
+			gpuProgram.setUniform(0, "isTexture");
 			Circle(i);
 			glBufferData(GL_ARRAY_BUFFER,
 				sizeof(circle),
@@ -340,33 +337,32 @@ public:
 				2, GL_FLOAT, GL_FALSE,
 				0, NULL);
 			int location = glGetUniformLocation(gpuProgram.getId(), "color");
-			glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
+			glUniform3f(location, 0.0f, 1.0f, 0.0f); 
 			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 
-			gpuProgram.setUniform((*texture[i]), "textureUnit");//betöltjük az aktuális textureUnit-ot
-			gpuProgram.setUniform(1, "isTexture");//mostmár a textúrához igazítja a pixel színét
-			glBufferData(GL_ARRAY_BUFFER,//betöltjüka vert-et a bufferbe
+			gpuProgram.setUniform((*texture[i]), "textureUnit");
+			gpuProgram.setUniform(1, "isTexture");
+			glBufferData(GL_ARRAY_BUFFER,
 				sizeof(vert),
 				vert,
 				GL_STATIC_DRAW);
-			//betöltjük a vertet
+			
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0,
 				2, GL_FLOAT, GL_FALSE,
 				0, NULL);
-			//betöltjuk a csúcspontokat
+			
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1,
 				2, GL_FLOAT, GL_FALSE,
-				0, (void*)(4*sizeof(vec2)));//4*vec2 offset-->az utolsó 4 elemet töltse be
+				0, (void*)(4*sizeof(vec2)));
 
-			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 4 /*# Elements*/);//kirajzoljuk
+			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 4 /*# Elements*/);
 		}
 	}
 
 	void DrawGraph(){
 
-		//saving Neighbors
 		glBindVertexArray(vao1);
 		glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
 			sizeof(neighbors),  // # bytes
@@ -396,14 +392,12 @@ public:
 
 
 Graph* graph;
-
-// Initialization, create an OpenGL context
 void onInitialization() {
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	glViewport(0, 0, windowWidth, windowHeight);
 
-	glGenVertexArrays(1, &vao);	// get 1 vao id
+	glGenVertexArrays(1, &vao);	
 	glGenVertexArrays(1, &vao1);
 	glGenVertexArrays(1, &vao2);
 
@@ -467,39 +461,38 @@ float lorentz(vec3 a, vec3 b) {
 
 void Moving(vec2 MousePos) {
 	vec3 Origo(0, 0, 1);
-	vec3 Q = ConvertToVec3(MousePos);//A vektor amivel tolunk
+	vec3 Q = ConvertToVec3(MousePos);
 
-	float dist = acosh(-lorentz(Origo, Q));//Origo és a Q távolsága a hiperbolikus síkon
+	float dist = acosh(-lorentz(Origo, Q));
 	
-	vec3 v;//irányvektor
+	vec3 v;
 
-	if (dist == 0)//nem osztunk 0-val
+	if (dist == 0)
 		return;
 
-	v = (Q - (Origo * cosh(dist))) / sinh(dist);//irányvektor a hiperbolikus síkon
-
-	//2 pont amire tükrözünk úgy hogy dist(m1, m2)=dist(Origo, Q)/2<--ezért van dist/4 és 3*dist/4 mivel igy 2/4 lesz a távolságuk
-	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
-	vec3 m2 = (Origo * cosh(3*dist / 4)) + (v * sinh(3*dist / 4));//m2 az OriogoQ vektoron
+	v = (Q - (Origo * cosh(dist))) / sinh(dist);
 
 	
-	//az összes pontunkat tükrözzük az m1-re aztán az m2-re
-	for (int i = 0; i < 50; i++) {
-		vec3 t = graph->vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
+	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));
+	vec3 m2 = (Origo * cosh(3*dist / 4)) + (v * sinh(3*dist / 4));
 
-		float dist1 = acosh(-lorentz(m1, t));//m1 t távolság
-		if (dist1 != dist1)//Ha dist2 nan
+	
+	for (int i = 0; i < 50; i++) {
+		vec3 t = graph->vertices3D[i];
+
+		float dist1 = acosh(-lorentz(m1, t));
+		if (dist1 != dist1 || dist1==0)
 			return;
 		
-		vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//irányvektor t pontban
-		vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t tükrözve m1-re
+		vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);
+		vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));
 
-		float dist2 = acosh(-lorentz(m2, t1));//t1 m2 távolság
-		if (dist2 != dist2)//ha dist2 nan
+		float dist2 = acosh(-lorentz(m2, t1));
+		if (dist2 != dist2 ||dist2==0)
 			return;
 
-		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
-		vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 tükrözve m2-re
+		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);
+		vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));
 
 		graph->vertices3D[i] = t2;
 		graph->vertices[i] = ConvertToVec2(graph->vertices3D[i]);
@@ -510,35 +503,34 @@ void Moving(vec2 MousePos) {
 
 void ShiftOneNode(int i, vec2 MousePos) {
 	vec3 Origo(0, 0, 1);
-	vec3 Q = ConvertToVec3(MousePos);//A vektor amivel tolunk
-	float dist = acosh(-lorentz(Origo, Q));//Origo és a Q távolsága a hiperbolikus síkon
+	vec3 Q = ConvertToVec3(MousePos);
+	float dist = acosh(-lorentz(Origo, Q));
+	vec3 v;
 
-	vec3 v;//irányvektor
-
-	if (dist == 0)//nem osztunk 0-val
+	if (dist == 0)
 		return;
 
-	v = (Q - (Origo * cosh(dist))) / sinh(dist);//irányvektor a hiperbolikus síkon
+	v = (Q - (Origo * cosh(dist))) / sinh(dist);
 
-	//2 pont amire tükrözünk úgy hogy dist(m1, m2)=dist(Origo, Q)/2<--ezért van dist/4 és 3*dist/4 mivel igy 2/4 lesz a távolságuk
-	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
-	vec3 m2 = (Origo * cosh(3 * dist / 4)) + (v * sinh(3 * dist / 4));//m2 az OriogoQ vektoron
 
-	vec3 t = graph->vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
+	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));
+	vec3 m2 = (Origo * cosh(3 * dist / 4)) + (v * sinh(3 * dist / 4));
 
-	float dist1 = acosh(-lorentz(m1, t));//m1 t távolság
-	if (dist1 != dist1)//ha dist1 nan
+	vec3 t = graph->vertices3D[i];
+
+	float dist1 = acosh(-lorentz(m1, t));
+	if (dist1 != dist1 || dist1==0)
 		return;
 
-	vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//irányvektor t pontban
-	vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t tükrözve m1-re
+	vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);
+	vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));
 
-	float dist2 = acosh(-lorentz(m2, t1));//t1 m2 távolság
-	if (dist2 != dist2)//ha dist2 nan
+	float dist2 = acosh(-lorentz(m2, t1));
+	if (dist2 != dist2 ||dist2==0)
 		return;
 
-	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
-	vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 tükrözve m2-re
+	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);
+	vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));
 
 	graph->vertices3D[i] = t2;
 	graph->vertices[i] = ConvertToVec2(graph->vertices3D[i]);
@@ -554,13 +546,13 @@ float Distance(vec3 a, vec3 b) {
 	return dist;
 }
 
-vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {//ha szomszédok ez a kettõ pont között az erõ
-	vec2 temp = ((a - b) * (log(param)));// = log(d/d*)<-úgy jöttem, rá, hogy ez a fv hasonlít a legjobban a házi videóban lévõ függényre
+vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {
+	vec2 temp = ((a - b) * (log(param)));
 	return temp;
 }
 
-vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {//ha nem szomszédok ez a két pont között az erõ
-	vec2 temp = ((a - b) * ((-1/(param*param))));// -1/(d / d*)^2 < -úgy jöttem, rá, hogy ez a fv hasonlít a legjobban a házi videóban lévõ függényre
+vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {
+	vec2 temp = ((a - b) * ((-1/(param*param))));
 	return temp;
 }
 
@@ -573,13 +565,13 @@ void Sorting() {
 
 	for (int i = 0; i <50; i++) {
 
-		vec2 force;//eredõ erõ egy pontra
+		vec2 force;
 
 		for (int j = 0; j < 50; j++) {
 			if (i == j)
 				continue;
 
-			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);//hiperbolikus síkon a 2 vektor távolsága
+			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);
 
 			float param = dist / idealDistance;
 
@@ -591,10 +583,10 @@ void Sorting() {
 			}
 		}
 
-		force = force + (-graph->vertices[i] * 3.0f);//globális erõtér
+		force = force + (-graph->vertices[i] * 3.0f);
 		force = force * 0.01f;
 
-		ShiftOneNode(i, force);//eltolja a pontot
+		ShiftOneNode(i, force);
 	}
 
 	graph->InitNeighbors();
