@@ -223,9 +223,24 @@ public:
 
 	void InitVertices() {//csúcsok legenrálása
 
+		for (int i = 0; i < 50; i++) {
+
+			float x = ((float(rand()) / float(RAND_MAX)) * (2)) - 1;
+			float y = ((float(rand()) / float(RAND_MAX)) * (2)) - 1;
+			float z = sqrt(1 + x * x + y * y);
+
+			vertices3D[i].x = x;
+			vertices3D[i].y = y;
+			vertices3D[i].z = z;
+
+			vertices[i] = ConvertToVec2(vertices3D[i]);
+		}
+	}
+
+	void GetOptimalSet() {
+
 		int min_intersects = 10000;
 		vec2 optimalVertices[50];
-
 		//vertices
 		for (int i = 0; i < 5000; i++) {//100 grafot generálunk
 
@@ -254,6 +269,8 @@ public:
 		for (int i = 0; i < 50; i++) {
 			vertices3D[i] = ConvertToVec3(vertices[i]);
 		}
+
+		InitNeighbors();
 	}
 
 	void InitNeighbors() {
@@ -471,14 +488,14 @@ void Moving(vec2 MousePos) {
 		vec3 t = graph->vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
 
 		float dist1 = acosh(-lorentz(m1, t));//m1 t távolság
-		if (dist1 == 0)//0-val nem osztunk
+		if (dist1 != dist1)//Ha dist2 nan
 			return;
-
+		
 		vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//irányvektor t pontban
 		vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t tükrözve m1-re
 
 		float dist2 = acosh(-lorentz(m2, t1));//t1 m2 távolság
-		if (dist2 == 0)//0-val nem osztunk
+		if (dist2 != dist2)//ha dist2 nan
 			return;
 
 		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
@@ -510,14 +527,14 @@ void ShiftOneNode(int i, vec2 MousePos) {
 	vec3 t = graph->vertices3D[i];//csak azért hogy kevesebbet kelljen írni a késõbiekben
 
 	float dist1 = acosh(-lorentz(m1, t));//m1 t távolság
-	if (dist1 == 0)//0-val nem osztunk
+	if (dist1 != dist1)//ha dist1 nan
 		return;
 
 	vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//irányvektor t pontban
 	vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t tükrözve m1-re
 
 	float dist2 = acosh(-lorentz(m2, t1));//t1 m2 távolság
-	if (dist2 == 0)//0-val nem osztunk
+	if (dist2 != dist2)//ha dist2 nan
 		return;
 
 	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//irányvektor t1 pontban
@@ -586,7 +603,10 @@ void Sorting() {
 bool sort = false;
 // Key of ASCII code pressed
 void onKeyboard(unsigned char key, int pX, int pY) {
-	if (key == 32) sort=true;
+	if (key == ' ') {
+		graph->GetOptimalSet();
+		sort = true;
+	}
 	glutPostRedisplay();
 	
 }
@@ -637,7 +657,9 @@ void onIdle() {
 
 	if (sort) {
 		iterations++;
+
 		Sorting();
+
 		if (iterations == 1500) {
 			sort = false;
 			iterations = 0;
