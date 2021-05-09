@@ -1,5 +1,5 @@
-//=============================================================================================
-// Mintaprogram: Zˆld h·romszˆg. Ervenyes 2019. osztol.
+Ôªø//=============================================================================================
+// Mintaprogram: Z√∂ld h√°romsz√∂g. Ervenyes 2019. osztol.
 //
 // A beadott program csak ebben a fajlban lehet, a fajl 1 byte-os ASCII karaktereket tartalmazhat, BOM kihuzando.
 // Tilos:
@@ -18,7 +18,7 @@
 //
 // NYILATKOZAT
 // ---------------------------------------------------------------------------------------------
-// Nev    : BakÛ P·l Ign·c
+// Nev    : Bak√≥ P√°l Ign√°c
 // Neptun : I31TDE
 // ---------------------------------------------------------------------------------------------
 // ezennel kijelentem, hogy a feladatot magam keszitettem, es ha barmilyen segitseget igenybe vettem vagy
@@ -32,6 +32,7 @@
 // negativ elojellel szamoljak el es ezzel parhuzamosan eljaras is indul velem szemben.
 //=============================================================================================
 #include "framework.h"
+#include <iostream>
 
 // vertex shader in GLSL: It is a Raw string (C++11) since it contains new line characters
 const char* const vertexSource = R"(
@@ -100,30 +101,30 @@ vec3 ConvertToVec3(vec2 a) {
 }
 
 
-bool TwoSegmentsIntersects(vec2 a_1, vec2 a_2, vec2 b_1, vec2 b_2) {//vizsg·lja hogy kÈt szakasz metszi-e egym·st
+bool TwoSegmentsIntersects(vec2 a_1, vec2 a_2, vec2 b_1, vec2 b_2) {//vizsg√°lja hogy k√©t szakasz metszi-e egym√°st
 	
 	/*
 	* elv:
-	* Elsınek megvizsg·ljuk hogy az x tengelyen lÈvı intervallumaiknak van-e kˆzˆs rÈsze. Ha nincs akkor nem metszehtik egym·st, ha van megy¸nk tov·bb
-	* FelÌrjuk a kÈt vektorra illesztett egyenes egyenletÈt Ès ha azok kiegyenlÌtik egym·st akkor van metszı pont aminek megvannak a koordin·t·i
-	* MegnÈzz¸k, hogy a metszı pont x koordin·t·ja eleme e a kÈt intervallum kˆzˆs rÈszÈnek
-	* kÈt intervallum kˆzˆs rÈsze [kÈt baloldal kˆz¸l a nagyobbik; kÈt jobboldal kˆz¸l a kisebbik]
+	* Els≈ënek megvizsg√°ljuk hogy az x tengelyen l√©v≈ë intervallumaiknak van-e k√∂z√∂s r√©sze. Ha nincs akkor nem metszehtik egym√°st, ha van megy√ºnk tov√°bb
+	* Fel√≠rjuk a k√©t vektorra illesztett egyenes egyenlet√©t √©s ha azok kiegyenl√≠tik egym√°st akkor van metsz≈ë pont aminek megvannak a koordin√°t√°i
+	* Megn√©zz√ºk, hogy a metsz≈ë pont x koordin√°t√°ja eleme e a k√©t intervallum k√∂z√∂s r√©sz√©nek
+	* k√©t intervallum k√∂z√∂s r√©sze [k√©t baloldal k√∂z√ºl a nagyobbik; k√©t jobboldal k√∂z√ºl a kisebbik]
 	*/
 
 
-	//a bal Ès jobb oldali pontja
+	//a bal √©s jobb oldali pontja
 	float min_a = a_1.x < a_2.x ? a_1.x : a_2.x;
 	float max_a = a_1.x > a_2.x ? a_1.x : a_2.x;
-	//b bal Ès jobb oldali pontja
+	//b bal √©s jobb oldali pontja
 	float min_b = b_1.x < b_2.x ? b_1.x : b_2.x;
 	float max_b = b_1.x > b_2.x ? b_1.x : b_2.x;
 
 	
-	if (max_a < min_b) return false; //az intervallumok x tengely mentÈn nem metszik egym·st, teh·t nem metszhetik egym·st a vektorok
+	if (max_a < min_b) return false; //az intervallumok x tengely ment√©n nem metszik egym√°st, teh√°t nem metszhetik egym√°st a vektorok
 
 	//egyenes egyenlete: A1*x + b1 = y
 
-	//meredeksÈgek
+	//meredeks√©gek
 	float A1 = 0;
 	float A2 = 0;
 
@@ -133,12 +134,12 @@ bool TwoSegmentsIntersects(vec2 a_1, vec2 a_2, vec2 b_1, vec2 b_2) {//vizsg·lja 
 	if (b_1.x - a_2.x != 0)
 		A2 = (b_1.y - b_2.y) / (b_1.x - b_2.x);
 	
-	//eltol·s y tengelyen
+	//eltol√°s y tengelyen
 	float b1 = a_1.y - A1 * a_1.x;
 	float b2 = b_1.y - A2 * b_1.x;
 
-	//A pont ahol metszik egym·st legyen P(X,Y)
-	//Akkor metszik egym·st, ha A1*x + b1=A2*x + b2
+	//A pont ahol metszik egym√°st legyen P(X,Y)
+	//Akkor metszik egym√°st, ha A1*x + b1=A2*x + b2
 	float X = (b2 - b1) / (A1 - A2);
 
 	//
@@ -151,7 +152,7 @@ bool TwoSegmentsIntersects(vec2 a_1, vec2 a_2, vec2 b_1, vec2 b_2) {//vizsg·lja 
 		return true;
 }
 
-int Intersects(int arr[122], vec2 vert[50]) {//visszaadja hogy h·ny metszı Èl van
+int Intersects(int arr[122], vec2 vert[50]) {//visszaadja hogy h√°ny metsz≈ë √©l van
 	int sum = 0;
 	for (int i = 0; i < 120; i += 2) {
 		if (i > 1) {
@@ -173,7 +174,7 @@ void SetNeighbours(vec2 old[122], vec2 next[122]) {
 	}
 }
 
-//true-val tÈr vissza ha egy szomszÈds·g m·r lÈtezik
+//true-val t√©r vissza ha egy szomsz√©ds√°g m√°r l√©tezik
 bool neighborAlreadyExists(int arr[122], int a, int b, int elements) {
 	for (int i = 0; i < (elements - 2); i += 2) {
 		if ((a == arr[i] && b == arr[i + 1]) || (b == arr[i] && a == arr[i + 1])) {
@@ -196,15 +197,15 @@ public:
 	vec2 vert[8];
 	Texture* texture[50];
 
-	vec3 vertices3D[50];//50pont a hiperbolikos sÌkon
-	vec2 vertices[50];//50 pont a gr·fban
+	vec3 vertices3D[50];//50pont a hiperbolikos s√≠kon
+	vec2 vertices[50];//50 pont a gr√°fban
 
-	int indexes[122];//122 random index a szomszÈdokbÛl
-	vec2 neighbors[122];//61 Èl kell->122pont a 61 Èlhez
+	int indexes[122];//122 random index a szomsz√©dokb√≥l
+	vec2 neighbors[122];//61 √©l kell->122pont a 61 √©lhez
 
 public:
 
-	void InitIndexes() {//61 cs˙cs p·r legener·l·sa
+	void InitIndexes() {//61 cs√∫cs p√°r legener√°l√°sa
 		for (int i = 0; i < 122; i += 2) {
 
 
@@ -221,7 +222,7 @@ public:
 		}
 	}
 
-	void InitVertices() {//cs˙csok legenr·l·sa
+	void InitVertices() {//cs√∫csok legenr√°l√°sa
 
 		for (int i = 0; i < 50; i++) {
 
@@ -239,10 +240,10 @@ public:
 
 	void GetOptimalSet() {
 
-		int min_intersects = 10000;
+		/*int min_intersects = 10000;
 		vec2 optimalVertices[50];
 		//vertices
-		for (int i = 0; i < 5000; i++) {//100 grafot gener·lunk
+		for (int i = 0; i < 5000; i++) {//100 grafot gener√°lunk
 
 
 			float x = ((float(rand()) / float(RAND_MAX)) * (2)) - 1;
@@ -255,7 +256,7 @@ public:
 
 			vertices[i - (50 * (i / 50))] = ConvertToVec2(vertices3D[i - (50 * (i / 50))]);
 
-			//100 esetbıl kiv·lasztjuk azt amelyikben a legkevesebb metszı Èl van
+			//100 esetb≈ël kiv√°lasztjuk azt amelyikben a legkevesebb metsz≈ë √©l van
 			if ((i - (50 * (i / 50))) == 49) {
 				if (Intersects(indexes, vertices) < min_intersects) {
 					min_intersects = Intersects(indexes, vertices);
@@ -270,7 +271,7 @@ public:
 			vertices3D[i] = ConvertToVec3(vertices[i]);
 		}
 
-		InitNeighbors();
+		InitNeighbors();*/
 	}
 
 	void InitNeighbors() {
@@ -279,7 +280,7 @@ public:
 		}
 	}
 
-	void Circle(int index) {//kirajzol egy kˆrt az ·tvett index¸ pont kˆzÈpponttal
+	void Circle(int index) {//kirajzol egy k√∂rt az √°tvett index√º pont k√∂z√©pponttal
 
 		for (int i = 0; i < 100; i++) {
 
@@ -304,13 +305,13 @@ public:
 
 	}
 
-	void InitTextures() {//feltˆli a text˙ra tˆmbˆt
+	void InitTextures() {//felt√∂li a text√∫ra t√∂mb√∂t
 		for (int i = 0; i < 50; i++) {
 			int width = 8, height = 8;				// create checkerboard texture procedurally
 			std::vector<vec4> image(width * height);
 			for (int y = 0; y < height; y++) {
 				for (int x = 0; x < width; x++) {
-					//random szÌn gener·l·sa
+					//random sz√≠n gener√°l√°sa
 					float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 					float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 					float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -327,8 +328,8 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, vbo2[0]);
 
 		for (int i = 0; i < 50; i++) {
-			//elsınek kirajzoljuk a kˆrt
-			gpuProgram.setUniform(0, "isTexture");//color szÌn˚ legyen a pixel
+			//els≈ënek kirajzoljuk a k√∂rt
+			gpuProgram.setUniform(0, "isTexture");//color sz√≠n≈± legyen a pixel
 			Circle(i);
 			glBufferData(GL_ARRAY_BUFFER,
 				sizeof(circle),
@@ -343,22 +344,22 @@ public:
 			glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
 			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 100 /*# Elements*/);
 
-			gpuProgram.setUniform((*texture[i]), "textureUnit");//betˆltj¸k az aktu·lis textureUnit-ot
-			gpuProgram.setUniform(1, "isTexture");//mostm·r a text˙r·hoz igazÌtja a pixel szÌnÈt
-			glBufferData(GL_ARRAY_BUFFER,//betˆltj¸ka vert-et a bufferbe
+			gpuProgram.setUniform((*texture[i]), "textureUnit");//bet√∂ltj√ºk az aktu√°lis textureUnit-ot
+			gpuProgram.setUniform(1, "isTexture");//mostm√°r a text√∫r√°hoz igaz√≠tja a pixel sz√≠n√©t
+			glBufferData(GL_ARRAY_BUFFER,//bet√∂ltj√ºka vert-et a bufferbe
 				sizeof(vert),
 				vert,
 				GL_STATIC_DRAW);
-			//betˆltj¸k a vertet
+			//bet√∂ltj√ºk a vertet
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0,
 				2, GL_FLOAT, GL_FALSE,
 				0, NULL);
-			//betˆltjuk a cs˙cspontokat
+			//bet√∂ltjuk a cs√∫cspontokat
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1,
 				2, GL_FLOAT, GL_FALSE,
-				0, (void*)(4*sizeof(vec2)));//4*vec2 offset-->az utolsÛ 4 elemet tˆltse be
+				0, (void*)(4*sizeof(vec2)));//4*vec2 offset-->az utols√≥ 4 elemet t√∂ltse be
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0 /*startIdx*/, 4 /*# Elements*/);//kirajzoljuk
 		}
@@ -397,6 +398,68 @@ public:
 
 Graph* graph;
 
+float lorentz(vec3 a, vec3 b) {
+	return a.x * b.x + a.y * b.y - a.z * b.z;
+}
+
+float Distance(vec3 a, vec3 b) {
+	float dist = acosh(-lorentz(a, b));
+	return dist;
+}
+
+void ZH() {
+	vec3 Point(0, 0, 0);
+	vec2 Q1(0, 0);
+	printf("P : Pont amit eltolunk\n");
+	std::cin >> Point.x;
+	std::cin >> Point.y;
+
+	printf("Q : Pont amivel tolunk\n");
+	std::cin >> Q1.x;
+	std::cin >> Q1.y;
+	Point.z = ConvertToVec3(vec2(Point.x, Point.y)).z;
+
+	vec3 Origo(0, 0, 1);//origo
+	vec3 Q = ConvertToVec3(Q1);//A vektor amivel tolunk
+	printf("Q 3D-ben: %f %f %f\n", Q.x, Q.y, Q.z);
+
+	float dist = acosh(-lorentz(Origo, Q));//Origo √©s a Q t√°vols√°ga a hiperbolikus s√≠kon
+	printf("Origo Q dist a hiperbolikus sikon: %f\n", dist);
+	vec3 v;//ir√°nyvektor
+
+	if (dist == 0)//nem osztunk 0-val
+		return;
+
+	v = (Q - (Origo * cosh(dist))) / sinh(dist);//ir√°nyvektor a hiperbolikus s√≠kon
+	printf("iranyvektor Q pontban %f %f %f\n", v.x, v.y, v.z);
+	//2 pont amire t√ºkr√∂z√ºnk √∫gy hogy dist(m1, m2)=dist(Origo, Q)/2<--ez√©rt van dist/4 √©s 3*dist/4 mivel igy 2/4 lesz a t√°vols√°guk
+	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
+	vec3 m2 = (Origo * cosh(3 * dist / 4)) + (v * sinh(3 * dist / 4));//m2 az OriogoQ vektoron
+	printf("2 pont amire tukrozunk: m1( %f , %f , %f )  m2( %f , %f , %f )\n", m1.x, m1.y, m1.z, m2.x, m2.y, m2.z);
+
+	float dist1 = acosh(-lorentz(m1, Point));//m1 t t√°vols√°g
+	printf("m1 P dist a hiperbolikus sikon: %f\n", dist1);
+
+
+	if (dist1 != dist1)//ha dist1 nan
+		return;
+
+	vec3 v1 = (m1 - (Point * cosh(dist1))) / sinh(dist1);//ir√°nyvektor t pontban
+	printf("iranyvektor P pontban %f %f %f\n", v1.x, v1.y, v1.z);
+	vec3 t1 = (Point * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t t√ºkr√∂zve m1-re
+	printf("P1: P tukrozve m1-re --> P1( %f , %f , %f )\n", t1.x, t1.y, t1.z);
+
+	float dist2 = acosh(-lorentz(m2, t1));//t1 m2 t√°vols√°g
+	printf("m2 P1 dist a hiperbolikus sikon: %f\n", dist2);
+	if (dist2 != dist2)//ha dist2 nan
+		return;
+
+	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//ir√°nyvektor t1 pontban
+	printf("iranyvektor P1 pontban %f %f %f\n", v2.x, v2.y, v2.z);
+	vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 t√ºkr√∂zve m2-re
+	printf("P2: P1 tukrozve m2-re --> P2( %f , %f , %f )", t2.x, t2.y, t2.z);
+}
+
 // Initialization, create an OpenGL context
 void onInitialization() {
 	glViewport(0, 0, windowWidth, windowHeight);
@@ -424,14 +487,24 @@ void onInitialization() {
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); // stride, offset: tightly packed*/
 
+
+	//ZH
+	//ZH();//eltolas
+	//printf("%f\n", Distance(vec3(0, 0, 0), vec3(0, 0, 0)));//distance
+	//printf("%f\n", lorentz(vec3(0, 0, 0), vec3(0, 0, 0)));//lorentz
+	//printf("%f %f %f", ConvertToVec3(vec2(0, 0)));//vec2-->vec3
+	//printf("%f %f", ConvertToVec2(vec3(0, 0, 0)))//vec3-->vec2
+
+
 	// create program for the GPU
 	gpuProgram.create(vertexSource, fragmentSource, "outColor");
 	graph = new Graph();
 }
+	
 
 // Window has become invalid: Redraw
 void onDisplay() {
-	glClearColor(0, 0, 0, 0);     // background color
+	/*glClearColor(0, 0, 0, 0);     // background color
 	glClear(GL_COLOR_BUFFER_BIT); // clear frame buffer
 
 	// Set color to (0, 1, 0) = green
@@ -451,7 +524,7 @@ void onDisplay() {
 
 	graph->DrawGraph();
 	graph->DrawCircles();
-	glutSwapBuffers(); // exchange buffers for double buffering
+	glutSwapBuffers(); // exchange buffers for double buffering*/
 }
 
 
@@ -461,45 +534,43 @@ void onKeyboardUp(unsigned char key, int pX, int pY) {
 }
 
 
-float lorentz(vec3 a, vec3 b) {
-	return a.x * b.x + a.y * b.y - a.z * b.z;
-}
+
 
 void Moving(vec2 MousePos) {
 	vec3 Origo(0, 0, 1);
 	vec3 Q = ConvertToVec3(MousePos);//A vektor amivel tolunk
 
-	float dist = acosh(-lorentz(Origo, Q));//Origo Ès a Q t·vols·ga a hiperbolikus sÌkon
+	float dist = acosh(-lorentz(Origo, Q));//Origo √©s a Q t√°vols√°ga a hiperbolikus s√≠kon
 	
-	vec3 v;//ir·nyvektor
+	vec3 v;//ir√°nyvektor
 
 	if (dist == 0)//nem osztunk 0-val
 		return;
 
-	v = (Q - (Origo * cosh(dist))) / sinh(dist);//ir·nyvektor a hiperbolikus sÌkon
+	v = (Q - (Origo * cosh(dist))) / sinh(dist);//ir√°nyvektor a hiperbolikus s√≠kon
 
-	//2 pont amire t¸krˆz¸nk ˙gy hogy dist(m1, m2)=dist(Origo, Q)/2<--ezÈrt van dist/4 Ès 3*dist/4 mivel igy 2/4 lesz a t·vols·guk
+	//2 pont amire t√ºkr√∂z√ºnk √∫gy hogy dist(m1, m2)=dist(Origo, Q)/2<--ez√©rt van dist/4 √©s 3*dist/4 mivel igy 2/4 lesz a t√°vols√°guk
 	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
 	vec3 m2 = (Origo * cosh(3*dist / 4)) + (v * sinh(3*dist / 4));//m2 az OriogoQ vektoron
 
 	
-	//az ˆsszes pontunkat t¸krˆzz¸k az m1-re azt·n az m2-re
+	//az √∂sszes pontunkat t√ºkr√∂zz√ºk az m1-re azt√°n az m2-re
 	for (int i = 0; i < 50; i++) {
-		vec3 t = graph->vertices3D[i];//csak azÈrt hogy kevesebbet kelljen Ìrni a kÈsıbiekben
+		vec3 t = graph->vertices3D[i];//csak az√©rt hogy kevesebbet kelljen √≠rni a k√©s≈ëbiekben
 
-		float dist1 = acosh(-lorentz(m1, t));//m1 t t·vols·g
+		float dist1 = acosh(-lorentz(m1, t));//m1 t t√°vols√°g
 		if (dist1 != dist1)//Ha dist2 nan
 			return;
 		
-		vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//ir·nyvektor t pontban
-		vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t t¸krˆzve m1-re
+		vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//ir√°nyvektor t pontban
+		vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t t√ºkr√∂zve m1-re
 
-		float dist2 = acosh(-lorentz(m2, t1));//t1 m2 t·vols·g
+		float dist2 = acosh(-lorentz(m2, t1));//t1 m2 t√°vols√°g
 		if (dist2 != dist2)//ha dist2 nan
 			return;
 
-		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//ir·nyvektor t1 pontban
-		vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 t¸krˆzve m2-re
+		vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//ir√°nyvektor t1 pontban
+		vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 t√ºkr√∂zve m2-re
 
 		graph->vertices3D[i] = t2;
 		graph->vertices[i] = ConvertToVec2(graph->vertices3D[i]);
@@ -511,59 +582,57 @@ void Moving(vec2 MousePos) {
 void ShiftOneNode(int i, vec2 MousePos) {
 	vec3 Origo(0, 0, 1);
 	vec3 Q = ConvertToVec3(MousePos);//A vektor amivel tolunk
-	float dist = acosh(-lorentz(Origo, Q));//Origo Ès a Q t·vols·ga a hiperbolikus sÌkon
+	float dist = acosh(-lorentz(Origo, Q));//Origo √©s a Q t√°vols√°ga a hiperbolikus s√≠kon
 
-	vec3 v;//ir·nyvektor
+	vec3 v;//ir√°nyvektor
 
 	if (dist == 0)//nem osztunk 0-val
 		return;
 
-	v = (Q - (Origo * cosh(dist))) / sinh(dist);//ir·nyvektor a hiperbolikus sÌkon
+	v = (Q - (Origo * cosh(dist))) / sinh(dist);//ir√°nyvektor a hiperbolikus s√≠kon
 
-	//2 pont amire t¸krˆz¸nk ˙gy hogy dist(m1, m2)=dist(Origo, Q)/2<--ezÈrt van dist/4 Ès 3*dist/4 mivel igy 2/4 lesz a t·vols·guk
+	//2 pont amire t√ºkr√∂z√ºnk √∫gy hogy dist(m1, m2)=dist(Origo, Q)/2<--ez√©rt van dist/4 √©s 3*dist/4 mivel igy 2/4 lesz a t√°vols√°guk
 	vec3 m1 = (Origo * cosh(dist / 4)) + (v * sinh(dist / 4));//m1 az OriogoQ vektoron 
 	vec3 m2 = (Origo * cosh(3 * dist / 4)) + (v * sinh(3 * dist / 4));//m2 az OriogoQ vektoron
 
-	vec3 t = graph->vertices3D[i];//csak azÈrt hogy kevesebbet kelljen Ìrni a kÈsıbiekben
+	vec3 t = graph->vertices3D[i];//csak az√©rt hogy kevesebbet kelljen √≠rni a k√©s√µbiekben
 
-	float dist1 = acosh(-lorentz(m1, t));//m1 t t·vols·g
+	float dist1 = acosh(-lorentz(m1, t));//m1 t t√°vols√°g
 	if (dist1 != dist1)//ha dist1 nan
 		return;
 
-	vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//ir·nyvektor t pontban
-	vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t t¸krˆzve m1-re
+	vec3 v1 = (m1 - (t * cosh(dist1))) / sinh(dist1);//ir√°nyvektor t pontban
+	vec3 t1 = (t * cosh(2 * dist1)) + (v1 * sinh(dist1 * 2));//t t√ºkr√∂zve m1-re
 
-	float dist2 = acosh(-lorentz(m2, t1));//t1 m2 t·vols·g
+	float dist2 = acosh(-lorentz(m2, t1));//t1 m2 t√°vols√°g
 	if (dist2 != dist2)//ha dist2 nan
 		return;
 
-	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//ir·nyvektor t1 pontban
-	vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 t¸krˆzve m2-re
+	vec3 v2 = (m2 - (t1 * cosh(dist2))) / sinh(dist2);//ir√°nyvektor t1 pontban
+	vec3 t2 = (t1 * cosh(2 * dist2)) + (v2 * sinh(dist2 * 2));//t1 t√ºkr√∂zve m2-re
 
 	graph->vertices3D[i] = t2;
 	graph->vertices[i] = ConvertToVec2(graph->vertices3D[i]);
 }
 
+
+
+
 vec2 Direction(vec2 a, vec2 b) {
 	return (a-b);
 }
 
-float Distance(vec3 a, vec3 b) {
-	float dist = acosh(-lorentz(a, b));
 
-	return dist;
-}
 
-vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {//ha szomszÈdok ez a kettı pont kˆzˆtt az erı
-	vec2 temp = ((a - b) * (log(param)));// = log(d/d*)<-˙gy jˆttem, r·, hogy ez a fv hasonlÌt a legjobban a h·zi videÛban lÈvı f¸ggÈnyre
+vec2 ForceBetweenNeighbors(vec2 a, vec2 b, float param, float dist) {//ha szomsz√©dok ez a kett≈ë pont k√∂z√∂tt az er≈ë
+	vec2 temp = ((a - b) * (log(param)));// = log(d/d*)<-√∫gy j√∂ttem, r√°, hogy ez a fv hasonl√≠t a legjobban a h√°zi vide√≥ban l√©v≈ë f√ºgg√©nyre
 	return temp;
 }
 
-vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {//ha nem szomszÈdok ez a kÈt pont kˆzˆtt az erı
-	vec2 temp = ((a - b) * ((-1/(param*param))));// -1/(d / d*)^2 < -˙gy jˆttem, r·, hogy ez a fv hasonlÌt a legjobban a h·zi videÛban lÈvı f¸ggÈnyre
+vec2 ForceBetweenVerts(vec2 a, vec2 b, float param, float dist) {//ha nem szomsz√©dok ez a k√©t pont k√∂z√∂tt az er≈ë
+	vec2 temp = ((a - b) * ((-1 / (param * param))));// -1/(d / d*)^2 < -√∫gy j√∂ttem, r√°, hogy ez a fv hasonl√≠t a legjobban a h√°zi vide√≥ban l√©v≈ë f√ºgg√©nyre
 	return temp;
 }
-
 
 int iterations = 0;
 
@@ -573,13 +642,13 @@ void Sorting() {
 
 	for (int i = 0; i <50; i++) {
 
-		vec2 force;//eredı erı egy pontra
+		vec2 force;//ered≈ë er≈ë egy pontra
 
 		for (int j = 0; j < 50; j++) {
 			if (i == j)
 				continue;
 
-			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);//hiperbolikus sÌkon a 2 vektor t·vols·ga
+			float dist = Distance(graph->vertices3D[i], graph->vertices3D[j]);//hiperbolikus s√≠kon a 2 vektor t√°vols√°ga
 
 			float param = dist / idealDistance;
 
@@ -591,7 +660,7 @@ void Sorting() {
 			}
 		}
 
-		force = force + (-graph->vertices[i] * 3.0f);//glob·lis erıtÈr
+		force = force + (-graph->vertices[i] * 3.0f);//glob√°lis er≈ët√©r
 		force = force * 0.01f;
 
 		ShiftOneNode(i, force);//eltolja a pontot
